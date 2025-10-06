@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de QI (Quociente de Inteligência) - 15 Perguntas</title>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px; /* Aumentado para acomodar a revisão */
+    text-align: center;
+}
+
+h1 {
+    color: #007bff;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+}
+
+h2 {
+    color: #4a4a4a;
+    font-size: 1.5em;
+    margin-bottom: 25px;
+}
+
+h3 {
+    margin-top: 30px;
+    color: #dc3545; /* Destaque para a revisão */
+}
+
+.quiz-section {
+    padding: 20px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Estilo do Botão */
+button {
+    background-color: #28a745;
+    border: none;
+    padding: 12px 25px;
+    margin-top: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+button:disabled {
+    background-color: #90ee90;
+    cursor: not-allowed;
+}
+
+/* Estilo das Opções */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.option {
+    background-color: #e9ecef;
+    border: 2px solid #ced4da;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-weight: bold;
+}
+
+.option:hover {
+    background-color: #dee2e6;
+}
+
+.option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Estilo do Progresso */
+#progress {
+    text-align: right;
+    font-size: 1em;
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+/* Estilo dos Resultados */
+#iq-result-box {
+    background-color: #f8f9fa;
+    border: 3px solid #007bff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+}
+
+#iq-score {
+    display: block;
+    font-size: 3em;
+    color: #dc3545; /* Vermelho para destaque */
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+#iq-classification {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 15px;
+    color: #28a745;
+}
+
+.disclaimer {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 30px;
+}
+
+/* Estilos de Revisão */
+.error-item {
+    background-color: #fff3f3; /* Fundo levemente vermelho */
+    border: 1px solid #dc3545;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+}
+.error-question {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+.error-user-answer {
+    color: #dc3545; /* Errado */
+    font-style: italic;
+}
+.error-correct-answer {
+    color: #28a745; /* Certo */
+    font-weight: bold;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Teste de QI - Desafio de 15 Perguntas</h1>
+
+        <div id="start-screen" class="quiz-section">
+            <p>Este teste contém 15 perguntas de múltipla escolha sorteadas de um banco de 60 questões para avaliar seu raciocínio lógico, verbal e sequencial. Seu resultado de QI é uma estimativa baseada em sua pontuação e não deve ser considerado um diagnóstico oficial.</p>
+            <button id="start-button">Começar Teste</button>
+        </div>
+
+        <div id="quiz-container" class="quiz-section hidden">
+            <div id="progress">Questão <span id="current-question-number">1</span> de 15</div>
+            <h2 id="question-text"></h2>
+            <div id="options-container" class="options-grid">
+                </div>
+            <button id="next-button" disabled>Próxima</button>
+        </div>
+
+        <div id="results-screen" class="quiz-section hidden">
+            <h2>Seu Resultado de QI Estimado</h2>
+            <p id="final-score-text">Você acertou <span id="correct-answers"></span> de 15 perguntas.</p>
+            <div id="iq-result-box">
+                <p>Seu QI Estimado é:</p>
+                <span id="iq-score">---</span>
+            </div>
+            <p id="iq-classification"></p>
+            
+            <div id="error-review-container">
+                <h3>Revisão das Questões Erradas</h3>
+                </div>
+
+            <p class="disclaimer">Lembre-se: Testes online são apenas para diversão e não substituem uma avaliação profissional.</p>
+            <button onclick="location.reload()">Refazer Teste</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Banco de 60 Questões ---
+const allQuestions = [
+    // 1-5: Sequências Numéricas
+    { question: "Qual número completa a sequência: 2, 4, 8, 16, ___?", options: ["24", "30", "32", "36"], correctAnswer: "32" },
+    { question: "Qual o próximo número: 10, 15, 25, 40, ___?", options: ["55", "60", "65", "70"], correctAnswer: "60" }, // +5, +10, +15, +20
+    { question: "Qual o próximo número: 1, 1, 2, 3, 5, 8, ___?", options: ["11", "12", "13", "14"], correctAnswer: "13" }, // Fibonacci
+    { question: "Qual o número seguinte: 9, 16, 25, 36, ___?", options: ["45", "49", "61", "72"], correctAnswer: "49" }, // Quadrados
+    { question: "O que vem a seguir: 100, 96, 91, 85, ___?", options: ["79", "78", "77", "76"], correctAnswer: "78" }, // -4, -5, -6, -7
+    
+    // 6-10: Raciocínio Lógico Verbal
+    { question: "Se 'Cachorro' está para 'Cão', 'Gato' está para...?", options: ["Felino", "Gatinho", "Miau", "Animal"], correctAnswer: "Felino" },
+    { question: "Qual palavra completa a analogia: 'Quente' está para 'Frio', assim como 'Luz' está para...?", options: ["Dia", "Noite", "Sombra", "Escuridão"], correctAnswer: "Escuridão" },
+    { question: "Qual das palavras tem um significado oposto às demais? (Alegre, Contente, Triste, Feliz, Jubiloso)", options: ["Alegre", "Contente", "Triste", "Jubiloso"], correctAnswer: "Triste" },
+    { question: "Qual palavra não pertence ao grupo? (Maçã, Uva, Batata, Laranja, Banana)", options: ["Maçã", "Uva", "Batata", "Laranja"], correctAnswer: "Batata" }, // Tubérculo
+    { question: "Montanha está para Terra assim como Remoinho está para...?", options: ["Mar", "Vulcão", "Fluido", "Chuva"], correctAnswer: "Fluido" },
+    
+    // 11-15: Problemas Aritméticos e de Idade
+    { question: "Se 3 patos põem 3 ovos em 3 dias, quantos ovos 6 patos põem em 6 dias?", options: ["6", "12", "18", "9"], correctAnswer: "12" },
+    { question: "João tem 12 anos e é três vezes mais velho que seu irmão. Quantos anos João terá quando tiver o dobro da idade do irmão?", options: ["15", "16", "18", "20"], correctAnswer: "16" }, // Irmão tem 4. Diferença é 8. 16 é o dobro de 8.
+    { question: "Se 2 + 3 = 10, e 7 + 2 = 63, e 6 + 5 = 66, então 8 + 4 = ?", options: ["84", "48", "96", "72"], correctAnswer: "96" }, // (A+B) * A
+    { question: "Um pai tem 40 anos e seu filho tem 10. Em quantos anos o pai terá o triplo da idade do filho?", options: ["5 anos", "10 anos", "15 anos", "20 anos"], correctAnswer: "5 anos" },
+    { question: "Uma garrafa de água custa R$ 11, e a água custa R$ 10 a mais que a garrafa. Qual o preço da garrafa?", options: ["R$ 1,00", "R$ 0,50", "R$ 0,75", "R$ 2,00"], correctAnswer: "R$ 0,50" }, // G+A=11, A=G+10 -> G+(G+10)=11 -> 2G=1 -> G=0,50
+    
+    // 16-20: Raciocínio Abstrato/Espacial (Verbalizado)
+    { question: "Qual o próximo conjunto de letras: A, C, E, G, ___?", options: ["H", "I", "J", "K"], correctAnswer: "I" }, // Pula uma letra
+    { question: "Se 1 = 5, 2 = 25, 3 = 125, 4 = 625, então 5 = ?", options: ["3125", "1", "725", "10"], correctAnswer: "1" }, // Inversão
+    { question: "Qual palavra não se encaixa: Dedo, Nariz, Braço, Olho, Boca?", options: ["Dedo", "Nariz", "Braço", "Boca"], correctAnswer: "Braço" }, // Membros
+    { question: "Se 'OVO' é 3, 'AMOR' é 4, 'COMPUTADOR' é 10, 'TESTE' é...?", options: ["4", "5", "6", "7"], correctAnswer: "5" }, // Número de letras
+    { question: "Se 4x = 20 e y = 5, quanto é (x * y) + y?", options: ["25", "30", "35", "40"], correctAnswer: "30" }, // x=5. (5*5)+5 = 30
+    
+    // 21-25: Enigmas e Pega-Ratão
+    { question: "Um trem elétrico viaja para o sul. O vento está soprando para o leste. Para onde vai a fumaça?", options: ["Leste", "Oeste", "Norte", "Não há fumaça"], correctAnswer: "Não há fumaça" },
+    { question: "O que tem cidades, mas não tem casas; tem florestas, mas não tem árvores; e tem água, mas não tem peixes?", options: ["Globo Terrestre", "Livro", "Mapa", "Planeta"], correctAnswer: "Mapa" },
+    { question: "Se você tem 10 peixes e 2 se afogam, quantos peixes você tem?", options: ["10", "8", "12", "9"], correctAnswer: "10" },
+    { question: "Se ontem fosse amanhã, hoje seria Sexta-feira. Que dia é hoje?", options: ["Domingo", "Segunda-feira", "Quarta-feira", "Sábado"], correctAnswer: "Quarta-feira" },
+    { question: "O que é que quanto mais se tira, mais aumenta?", options: ["A distância", "O buraco", "A escuridão", "O tempo"], correctAnswer: "O buraco" },
+    
+    // 26-30: Raciocínio Numérico II
+    { question: "Qual o próximo número: 64, 32, 16, 8, ___?", options: ["4", "6", "2", "1"], correctAnswer: "4" }, // Metade
+    { question: "Qual o número que falta na série: 1, 8, 27, 64, ___?", options: ["100", "125", "150", "216"], correctAnswer: "125" }, // Cubos
+    { question: "Se 1 = 3, 2 = 3, 3 = 5, 4 = 4, 5 = 4, então 6 = ?", options: ["3", "4", "5", "6"], correctAnswer: "3" }, // Número de letras na palavra
+    { question: "Se A = 1, B = 2, C = 3... Se DEZ = 13 (4+5+4). Quanto é MÊS?", options: ["16", "37", "31", "34"], correctAnswer: "37" }, // M=13, E=5, S=19. 13+5+19=37
+    { question: "O que vem a seguir: 10, 20, 11, 22, 12, ___?", options: ["24", "30", "13", "26"], correctAnswer: "24" }, // +10, -9, +11, -11, +12, -12
+    
+    // 31-35: Analogias Verbais II
+    { question: "Tijolo está para Parede assim como Célula está para...?", options: ["DNA", "Tecido", "Corpo", "Órgão"], correctAnswer: "Tecido" },
+    { question: "Potencial está para Real assim como Futuro está para...?", options: ["Passado", "Presente", "Capacidade", "Amanhã"], correctAnswer: "Presente" },
+    { question: "Qual palavra é sinônimo das outras? (Colossal, Enorme, Minúsculo, Gigantesco)", options: ["Colossal", "Enorme", "Minúsculo", "Gigantesco"], correctAnswer: "Minúsculo" }, // Três são grandes, uma é pequena
+    { question: "Motorista está para Carro assim como Piloto está para...?", options: ["Pista", "Avião", "Corrida", "Roda"], correctAnswer: "Avião" },
+    { question: "Qual palavra não pertence ao grupo? (Ouro, Ferro, Cobre, Diamante)", options: ["Ouro", "Ferro", "Cobre", "Diamante"], correctAnswer: "Diamante" }, // Não é um metal
+    
+    // 36-40: Padrões e Lógica III
+    { question: "Se um galo bota um ovo no telhado, para onde o ovo rola?", options: ["Norte", "Sul", "Oeste", "Não rola"], correctAnswer: "Não rola" }, // Galos não botam ovos
+    { question: "Qual o valor de 'x' no padrão: 3(9)6, 4(16)12, 5(25)20, 6(36)x?", options: ["30", "42", "48", "50"], correctAnswer: "30" }, // (Número)² e (Número) * (Número-1)
+    { question: "Das opções, qual é a única que tem ímpar número de letras?", options: ["Quatro", "Cinco", "Seis", "Oito"], correctAnswer: "Seis" }, // Quatro(6), Cinco(5), Seis(4), Oito(5)
+    { question: "Em um lago há uma plantação de nenúfares que dobra de tamanho a cada dia. Se ela cobriu o lago todo em 48 dias, em quantos dias cobriu metade do lago?", options: ["24 dias", "47 dias", "46 dias", "40 dias"], correctAnswer: "47 dias" },
+    { question: "Tenho 8 e tiro 6, e o resultado é 10. Qual a operação?", options: ["Multiplicação", "Divisão", "Subtração", "Horas"], correctAnswer: "Horas" }, // 8h - 6h = 2h ou 8 da manhã, tiro 6h e chego às 10h da noite
+    
+    // 41-45: Sequências Numéricas III
+    { question: "Qual o próximo número: 1, 2, 4, 7, 11, ___?", options: ["13", "14", "16", "17"], correctAnswer: "16" }, // +1, +2, +3, +4, +5
+    { question: "Qual número falta: 4, 1, 9, 6, 16, 13, ___?", options: ["25", "20", "22", "19"], correctAnswer: "25" }, // Duas sequências: 4, 9, 16, 25 (Quadrados) e 1, 6, 13 (+5, +7)
+    { question: "Qual o próximo número: 10, 30, 32, 96, 98, ___?", options: ["294", "300", "304", "308"], correctAnswer: "294" }, // x3, +2, x3, +2, x3
+    { question: "Complete a série: 2, 6, 12, 20, 30, ___?", options: ["40", "42", "45", "50"], correctAnswer: "42" }, // +4, +6, +8, +10, +12
+    { question: "Qual o próximo número: 5, 25, 125, 625, ___?", options: ["1250", "3125", "3000", "5000"], correctAnswer: "3125" }, // Potências de 5
+    
+    // 46-50: Raciocínio Lógico Verbal III
+    { question: "Se as letras forem embaralhadas, qual palavra você não consegue formar? (CASA, PATO, COLA, SAPO)", options: ["ASAC", "TAPA", "ALOC", "POSA"], correctAnswer: "TAPA" }, // Usa A e P
+    { question: "Qual dos cinco é menos similar aos outros quatro? (Urso, Cobra, Vaca, Cão, Tigre)", options: ["Urso", "Cobra", "Vaca", "Tigre"], correctAnswer: "Cobra" }, // Réptil
+    { question: "Qual das palavras completa a frase: 'Avião está para Ar, assim como Submarino está para ___'?", options: ["Profundidade", "Água", "Mar", "Oceano"], correctAnswer: "Água" },
+    { question: "Qual o par de palavras que tem uma relação diferente? (Quente/Frio, Alto/Baixo, Dia/Noite, Árvore/Floresta)", options: ["Quente/Frio", "Alto/Baixo", "Dia/Noite", "Árvore/Floresta"], correctAnswer: "Árvore/Floresta" }, // Os três primeiros são opostos
+    { question: "Qual palavra não se encaixa: Grama, Centímetro, Quilograma, Metro, Quilômetro?", options: ["Grama", "Centímetro", "Quilograma", "Metro"], correctAnswer: "Quilograma" }, // Medida de massa, o resto é comprimento
+    
+    // 51-55: Raciocínio Abstrato/Matemático IV
+    { question: "Se 7 = 49, 6 = 36, 5 = 25, então 4 = ?", options: ["16", "20", "24", "12"], correctAnswer: "16" }, // Quadrado
+    { question: "Se 'A' é o dobro de 'B', e 'B' é 3, quanto é 'A + B'?", options: ["6", "9", "12", "15"], correctAnswer: "9" }, // A=6, B=3. 6+3=9
+    { question: "Qual número completa a figura: 5, 7, 12 (na linha), 6, 8, 14 (na linha), 7, 9, ___ (na linha)?", options: ["15", "16", "17", "18"], correctAnswer: "16" }, // Soma simples
+    { question: "Se um relógio está atrasado 10 minutos a cada hora, quanto tempo ele estará atrasado depois de 6 horas?", options: ["40 minutos", "50 minutos", "60 minutos", "1 hora e 10 minutos"], correctAnswer: "60 minutos" },
+    { question: "O que vem a seguir: J, F, M, A, M, J, J, A, S, O, N, ___?", options: ["D", "L", "T", "Q"], correctAnswer: "D" }, // Meses do ano (Janeiro, Fevereiro...)
+    
+    // 56-60: Enigmas e Lógica IV
+    { question: "Qual cor representa o número 5, se Rosa=1, Verde=2, Laranja=3, Amarelo=4?", options: ["Roxo", "Vermelho", "Azul", "Branco"], correctAnswer: "Vermelho" }, // Sequência (1 a 6)
+    { question: "Eu tenho chaves, mas não abro portas. Eu tenho espaço, mas não tenho cômodos. Você pode entrar, mas não pode sair. O que eu sou?", options: ["Um labirinto", "Um teclado", "Um sonho", "Um diário"], correctAnswer: "Um teclado" },
+    { question: "Quantos noves há entre 1 e 100?", options: ["9", "10", "19", "20"], correctAnswer: "20" }, // 9, 19, ..., 89 (9x); 90, 91, ..., 99 (11x). Total 20
+    { question: "Qual a próxima letra: P, S, T, Q, Q, S, S, O, N, ___?", options: ["D", "C", "M", "T"], correctAnswer: "D" }, // Primeiras letras dos números (Primeiro, Segundo, Terceiro...)
+    { question: "Qual o próximo número: 13, 23, 33, 43, ___?", options: ["50", "53", "63", "55"], correctAnswer: "53" } // Números que terminam em 3
+];
+
+const NUM_QUESTIONS_TO_ASK = 15;
+
+let selectedQuestions = []; // As 15 questões sorteadas para o quiz
+let currentQuestionIndex = 0;
+let score = 0;
+// Armazena a questão original, a resposta do usuário e a resposta correta
+let errorLog = []; 
+
+// Elementos do DOM
+const startScreen = document.getElementById('start-screen');
+const quizContainer = document.getElementById('quiz-container');
+const resultsScreen = document.getElementById('results-screen');
+const startButton = document.getElementById('start-button');
+const questionText = document.getElementById('question-text');
+const optionsContainer = document.getElementById('options-container');
+const nextButton = document.getElementById('next-button');
+const currentQuestionNumber = document.getElementById('current-question-number');
+const correctAnswersSpan = document.getElementById('correct-answers');
+const iqScoreSpan = document.getElementById('iq-score');
+const iqClassificationP = document.getElementById('iq-classification');
+const errorReviewContainer = document.getElementById('error-review-container');
+
+// Função para sortear as questões
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Inicia o Quiz: Sorteia as questões e começa o fluxo
+startButton.addEventListener('click', () => {
+    // Sorteia 15 questões do banco
+    selectedQuestions = shuffleArray([...allQuestions]).slice(0, NUM_QUESTIONS_TO_ASK);
+    
+    startScreen.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+    loadQuestion();
+});
+
+// Passa para a Próxima Pergunta
+nextButton.addEventListener('click', () => {
+    const selectedOption = document.querySelector('.option.selected');
+    const q = selectedQuestions[currentQuestionIndex];
+
+    if (selectedOption) {
+        const selectedAnswer = selectedOption.innerText;
+        const isCorrect = selectedAnswer === q.correctAnswer;
+
+        if (isCorrect) {
+            score++;
+        } else {
+            // Loga o erro
+            errorLog.push({
+                question: q.question,
+                userAnswer: selectedAnswer,
+                correctAnswer: q.correctAnswer
+            });
+        }
+        
+        currentQuestionIndex++;
+        nextButton.disabled = true; 
+        
+        if (currentQuestionIndex < selectedQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+});
+
+// Carrega a pergunta atual no DOM
+function loadQuestion() {
+    const q = selectedQuestions[currentQuestionIndex];
+    
+    currentQuestionNumber.textContent = currentQuestionIndex + 1;
+    questionText.textContent = q.question;
+    optionsContainer.innerHTML = ''; 
+
+    // Cria os botões de opção, e os embaralha para maior variedade!
+    const shuffledOptions = shuffleArray([...q.options]);
+    
+    shuffledOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.classList.add('option');
+        button.textContent = option;
+        button.addEventListener('click', selectOption);
+        optionsContainer.appendChild(button);
+    });
+}
+
+// Lógica para selecionar uma opção
+function selectOption(event) {
+    document.querySelectorAll('.option').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+
+    event.target.classList.add('selected');
+    nextButton.disabled = false;
+}
+
+// Função para gerar o QI estimado
+function calculateIQ(score) {
+    // Lógica simplificada de mapeamento para 15 questões (baseada em 70 a 140)
+    let estimatedIQ;
+    
+    if (score <= 5) {
+        estimatedIQ = 75 + score * 2; 
+    } else if (score <= 10) {
+        estimatedIQ = 85 + score * 3; 
+    } else {
+        estimatedIQ = 110 + score * 1.5;
+    }
+    
+    // Limita o QI para evitar valores absurdos em um teste não-oficial.
+    return Math.min(Math.max(Math.round(estimatedIQ), 70), 140);
+}
+
+// Função para classificar o QI
+function classifyIQ(iq) {
+    if (iq >= 130) {
+        return { text: "Superdotação ou Muito Superior", color: "#dc3545" }; // Vermelho
+    } else if (iq >= 120) {
+        return { text: "Inteligência Superior", color: "#ffc107" }; // Amarelo
+    } else if (iq >= 110) {
+        return { text: "Inteligência Acima da Média", color: "#ffc107" }; // Amarelo
+    } else if (iq >= 90) {
+        return { text: "Inteligência Média ou Normal", color: "#28a745" }; // Verde
+    } else if (iq >= 80) {
+        return { text: "Abaixo da Média", color: "#17a2b8" }; // Azul
+    } else {
+        return { text: "Limítrofe", color: "#6c757d" }; // Cinza
+    }
+}
+
+
+// Exibição dos Resultados e Revisão de Erros
+function showResults() {
+    quizContainer.classList.add('hidden');
+    resultsScreen.classList.remove('hidden');
+
+    correctAnswersSpan.textContent = score;
+    
+    const estimatedIQ = calculateIQ(score);
+    const classification = classifyIQ(estimatedIQ);
+    
+    iqScoreSpan.textContent = estimatedIQ;
+    iqClassificationP.textContent = classification.text;
+    iqClassificationP.style.color = classification.color;
+
+    // --- Monta a Revisão de Erros ---
+    errorReviewContainer.innerHTML = '<h3>Revisão das Questões Erradas</h3>';
+
+    if (errorLog.length === 0) {
+        const p = document.createElement('p');
+        p.textContent = "Parabéns! Você não errou nenhuma questão!";
+        errorReviewContainer.appendChild(p);
+    } else {
+        errorLog.forEach((err, index) => {
+            const div = document.createElement('div');
+            div.classList.add('error-item');
+            
+            div.innerHTML = `
+                <p class="error-question">#${index + 1} - ${err.question}</p>
+                <p>Sua Resposta: <span class="error-user-answer">${err.userAnswer} (ERRADO)</span></p>
+                <p>Resposta Correta: <span class="error-correct-answer">${err.correctAnswer}</span></p>
+            `;
+            errorReviewContainer.appendChild(div);
+        });
+    }
+}
+    </script>
+</body>
+</html>
