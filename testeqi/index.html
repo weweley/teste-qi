@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de QI (Quociente de Inteligência) - 15 Perguntas</title>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 650px;
+    text-align: center;
+}
+
+h1 {
+    color: #007bff;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+}
+
+h2 {
+    color: #4a4a4a;
+    font-size: 1.5em;
+    margin-bottom: 25px;
+}
+
+.quiz-section {
+    padding: 20px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Estilo do Botão */
+button {
+    background-color: #28a745;
+    border: none;
+    padding: 12px 25px;
+    margin-top: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+button:disabled {
+    background-color: #90ee90;
+    cursor: not-allowed;
+}
+
+/* Estilo das Opções */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.option {
+    background-color: #e9ecef;
+    border: 2px solid #ced4da;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-weight: bold;
+}
+
+.option:hover {
+    background-color: #dee2e6;
+}
+
+.option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Estilo do Progresso */
+#progress {
+    text-align: right;
+    font-size: 1em;
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+/* Estilo dos Resultados */
+#iq-result-box {
+    background-color: #f8f9fa;
+    border: 3px solid #007bff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+}
+
+#iq-score {
+    display: block;
+    font-size: 3em;
+    color: #dc3545; /* Vermelho para destaque */
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+#iq-classification {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 15px;
+    color: #28a745;
+}
+
+.disclaimer {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 30px;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Teste de QI - Desafio de 15 Perguntas</h1>
+
+        <div id="start-screen" class="quiz-section">
+            <p>Este teste contém 15 perguntas de múltipla escolha para avaliar seu raciocínio lógico, verbal e sequencial. Seu resultado de QI é uma estimativa baseada em sua pontuação e não deve ser considerado um diagnóstico oficial.</p>
+            <button id="start-button">Começar Teste</button>
+        </div>
+
+        <div id="quiz-container" class="quiz-section hidden">
+            <div id="progress">Questão <span id="current-question-number">1</span> de 15</div>
+            <h2 id="question-text"></h2>
+            <div id="options-container" class="options-grid">
+                </div>
+            <button id="next-button" disabled>Próxima</button>
+        </div>
+
+        <div id="results-screen" class="quiz-section hidden">
+            <h2>Seu Resultado de QI Estimado</h2>
+            <p id="final-score-text">Você acertou <span id="correct-answers"></span> de 15 perguntas.</p>
+            <div id="iq-result-box">
+                <p>Seu QI Estimado é:</p>
+                <span id="iq-score">---</span>
+            </div>
+            <p id="iq-classification"></p>
+            <p class="disclaimer">Lembre-se: Testes online são apenas para diversão e não substituem uma avaliação profissional.</p>
+            <button onclick="location.reload()">Refazer Teste</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+    {
+        question: "Qual número completa a sequência: 2, 4, 8, 16, ___?",
+        options: ["24", "30", "32", "36"],
+        correctAnswer: "32"
+    },
+    {
+        question: "Se 'Cachorro' está para 'Cão', 'Gato' está para...?",
+        options: ["Felino", "Gatinho", "Miau", "Animal"],
+        correctAnswer: "Felino"
+    },
+    {
+        question: "Das seguintes palavras, qual é a menos relacionada ao grupo? (Casa, Apartamento, Chalé, Estrela, Mansão)",
+        options: ["Casa", "Apartamento", "Chalé", "Estrela"],
+        correctAnswer: "Estrela"
+    },
+    {
+        question: "Se 3 patos põem 3 ovos em 3 dias, quantos ovos 6 patos põem em 6 dias?",
+        options: ["6", "12", "18", "9"],
+        correctAnswer: "12" // Raciocínio: 1 pato põe 1 ovo em 3 dias. 6 patos põem 6 ovos em 3 dias. Em 6 dias, põem 12 ovos.
+    },
+    {
+        question: "Qual o próximo número na série de números primos: 2, 3, 5, 7, 11, ___?",
+        options: ["13", "14", "15", "17"],
+        correctAnswer: "13"
+    },
+    {
+        question: "Qual figura substitui o ponto de interrogação no padrão: Círculo, Quadrado, Triângulo, Círculo, Quadrado, ___?",
+        options: ["Quadrado", "Losango", "Triângulo", "Círculo"],
+        correctAnswer: "Triângulo"
+    },
+    {
+        question: "Qual palavra completa a analogia: 'Quente' está para 'Frio', assim como 'Luz' está para...?",
+        options: ["Dia", "Noite", "Sombra", "Escuridão"],
+        correctAnswer: "Escuridão"
+    },
+    {
+        question: "Se ontem fosse amanhã, hoje seria Sexta-feira. Que dia é hoje?",
+        options: ["Domingo", "Segunda-feira", "Quarta-feira", "Sábado"],
+        correctAnswer: "Quarta-feira" // Raciocínio: Se ontem (Terça) fosse amanhã (Quinta), hoje (Quarta) seria Sexta-feira.
+    },
+    {
+        question: "Se você tem 10 peixes e 2 se afogam, quantos peixes você tem?",
+        options: ["10", "8", "12", "9"],
+        correctAnswer: "10" // Peixes não se afogam
+    },
+    {
+        question: "Qual o valor de 'x' na sequência: 1, 4, 9, 16, 25, x?",
+        options: ["30", "36", "40", "49"],
+        correctAnswer: "36" // Sequência dos quadrados
+    },
+    {
+        question: "Qual das palavras tem um significado oposto às demais? (Alegre, Contente, Triste, Feliz, Jubiloso)",
+        options: ["Alegre", "Contente", "Triste", "Jubiloso"],
+        correctAnswer: "Triste"
+    },
+    {
+        question: "Um trem elétrico viaja para o sul. O vento está soprando para o leste. Para onde vai a fumaça?",
+        options: ["Leste", "Oeste", "Norte", "Não há fumaça"],
+        correctAnswer: "Não há fumaça" // Trem elétrico não produz fumaça
+    },
+    {
+        question: "Qual o próximo conjunto de letras: A, C, E, G, ___?",
+        options: ["H", "I", "J", "K"],
+        correctAnswer: "I" // Pulando uma letra (B, D, F, H)
+    },
+    {
+        question: "O que tem cidades, mas não tem casas; tem florestas, mas não tem árvores; e tem água, mas não tem peixes?",
+        options: ["Globo Terrestre", "Livro", "Mapa", "Planeta"],
+        correctAnswer: "Mapa"
+    },
+    {
+        question: "Se a palavra 'SOL' é codificada como 19-15-12, como a palavra 'PAZ' seria codificada?",
+        options: ["16-1-26", "17-2-27", "16-2-26", "15-1-25"],
+        correctAnswer: "16-1-26" // Posição das letras no alfabeto (P=16, A=1, Z=26)
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let userAnswers = []; // Para armazenar as respostas (opcional, mas bom para debug)
+
+// Elementos do DOM
+const startScreen = document.getElementById('start-screen');
+const quizContainer = document.getElementById('quiz-container');
+const resultsScreen = document.getElementById('results-screen');
+const startButton = document.getElementById('start-button');
+const questionText = document.getElementById('question-text');
+const optionsContainer = document.getElementById('options-container');
+const nextButton = document.getElementById('next-button');
+const currentQuestionNumber = document.getElementById('current-question-number');
+const correctAnswersSpan = document.getElementById('correct-answers');
+const iqScoreSpan = document.getElementById('iq-score');
+const iqClassificationP = document.getElementById('iq-classification');
+
+// Inicia o Quiz
+startButton.addEventListener('click', () => {
+    startScreen.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+    loadQuestion();
+});
+
+// Passa para a Próxima Pergunta
+nextButton.addEventListener('click', () => {
+    // 1. Verifica a resposta atual e atualiza a pontuação
+    const selectedOption = document.querySelector('.option.selected');
+    if (selectedOption) {
+        const selectedAnswer = selectedOption.innerText;
+        const correctAnswer = questions[currentQuestionIndex].correctAnswer;
+
+        // Atualiza a pontuação
+        if (selectedAnswer === correctAnswer) {
+            score++;
+        }
+        
+        // Salva a resposta do usuário
+        userAnswers.push({
+            question: currentQuestionIndex,
+            answer: selectedAnswer,
+            correct: selectedAnswer === correctAnswer
+        });
+
+        currentQuestionIndex++;
+        nextButton.disabled = true; // Desabilita para a próxima questão
+        
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+});
+
+// Carrega a pergunta atual no DOM
+function loadQuestion() {
+    const q = questions[currentQuestionIndex];
+    
+    currentQuestionNumber.textContent = currentQuestionIndex + 1;
+    questionText.textContent = q.question;
+    optionsContainer.innerHTML = ''; // Limpa as opções anteriores
+
+    // Cria os botões de opção
+    q.options.forEach(option => {
+        const button = document.createElement('button');
+        button.classList.add('option');
+        button.textContent = option;
+        button.addEventListener('click', selectOption);
+        optionsContainer.appendChild(button);
+    });
+}
+
+// Lógica para selecionar uma opção
+function selectOption(event) {
+    // Remove a seleção de todos os botões
+    document.querySelectorAll('.option').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+
+    // Adiciona a seleção ao botão clicado
+    event.target.classList.add('selected');
+    
+    // Habilita o botão 'Próxima'
+    nextButton.disabled = false;
+}
+
+// Cálculo do QI e Exibição dos Resultados
+function showResults() {
+    quizContainer.classList.add('hidden');
+    resultsScreen.classList.remove('hidden');
+
+    correctAnswersSpan.textContent = score;
+
+    // --- Lógica de Cálculo de QI Aproximado ---
+    // QI é baseado em uma escala normalizada, com Média = 100 e Desvio Padrão (DP) = 15.
+    const totalQuestions = questions.length;
+    
+    // Percentual de acertos (0 a 1)
+    const percentage = score / totalQuestions; 
+    
+    // Baseamos o cálculo na pontuação mínima (QI 70) e máxima (QI 130) para 15 questões, que cobre 95% da população (média +/- 2 DP).
+    // QI = Média + (DP * Z-score)
+    // Uma forma simplificada para um quiz de 15 perguntas é mapear a pontuação:
+    // 7 acertos (cerca de 47%) -> QI 90 (um pouco abaixo da média)
+    // 10 acertos (cerca de 67%) -> QI 110 (um pouco acima da média)
+    // 13 acertos (cerca de 87%) -> QI 130 (Superior/Superdotação)
+    
+    // Mapeamento simples:
+    // O range de pontuação é 0 a 15.
+    // Mapear o ponto médio (7 ou 8 acertos) para 100.
+    
+    let estimatedIQ;
+    
+    if (score <= 5) {
+        estimatedIQ = 75 + score * 2; // Começa em 75, sobe mais devagar
+    } else if (score <= 10) {
+        estimatedIQ = 85 + score * 3; // Rampa mais acentuada perto da média
+    } else {
+        estimatedIQ = 110 + score * 1.5; // Rampa mais lenta no topo
+    }
+    
+    // Limita o QI para evitar valores absurdos em um teste não-oficial.
+    estimatedIQ = Math.min(Math.max(Math.round(estimatedIQ), 70), 140); 
+    
+    iqScoreSpan.textContent = estimatedIQ;
+    
+    // Classificação
+    let classification = '';
+    if (estimatedIQ >= 130) {
+        classification = "Superdotação ou Muito Superior";
+        iqClassificationP.style.color = "#dc3545"; // Vermelho
+    } else if (estimatedIQ >= 110) {
+        classification = "Inteligência Superior ou Acima da Média";
+        iqClassificationP.style.color = "#ffc107"; // Amarelo
+    } else if (estimatedIQ >= 90) {
+        classification = "Inteligência Média ou Normal";
+        iqClassificationP.style.color = "#28a745"; // Verde
+    } else {
+        classification = "Abaixo da Média";
+        iqClassificationP.style.color = "#17a2b8"; // Azul
+    }
+
+    iqClassificationP.textContent = classification;
+}
+    </script>
+</body>
+</html>
